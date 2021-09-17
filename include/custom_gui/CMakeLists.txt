@@ -23,5 +23,7 @@
 ########################################################################
 install(FILES
     api.h
-    DESTINATION include/custom_gui
+    surface_plot.h 
+    surface_plot_form.h
+    surface_marker.h DESTINATION include/custom_gui
 )

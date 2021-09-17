@@ -91,6 +91,9 @@ include(GrVersion)
 
 include(GrPlatform) #define LIB_SUFFIX
 
+include(GrPython)
+
+
 if(NOT CMAKE_MODULES_DIR)
   set(CMAKE_MODULES_DIR lib${LIB_SUFFIX}/cmake)
 endif(NOT CMAKE_MODULES_DIR)
@@ -126,6 +129,12 @@ endif(APPLE)
 # Find gnuradio build dependencies
 ########################################################################
 find_package(Doxygen)
+find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED)
+find_package(qwtplot3d REQUIRED)
+find_package(Qwt 6.1.0 REQUIRED)
+find_package(Qwt REQUIRED)
+
+GR_PYTHON_CHECK_MODULE("PyQt5" PyQt5 True PYQT5_FOUND)
 
 ########################################################################
 # Setup doxygen option
@@ -148,6 +157,37 @@ add_custom_target(uninstall
     ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
     )
 
+########################################################################
+# Setup the include and linker paths
+########################################################################
+include_directories(
+    ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}/lib
+    ${CMAKE_BINARY_DIR}/include
+    ${Boost_INCLUDE_DIRS}
+    ${CPPUNIT_INCLUDE_DIRS}
+    ${GNURADIO_ALL_INCLUDE_DIRS}
+    ${QWT_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIRS}
+    ${QT_QWTPLOT3D_INCLUDE_DIR}
+    ${PYTHON_INCLUDE_DIRS}
+)
+
+link_directories(
+    ${Boost_LIBRARY_DIRS}
+    ${CPPUNIT_LIBRARY_DIRS}
+    ${GNURADIO_RUNTIME_LIBRARY_DIRS}
+    ${GNURADIO_FILTER_LIBRARY_DIRS}
+    ${QT_QWTPLOT3D_LIBRARY_DIRS}
+    ${QT_LIBRARY_DIRS}
+    ${QWT_LIBRARY_DIRS}
+
+)
+
+# Set component parameters
+set(GR_CUSTOM_GUI_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "" FORCE)
+set(GR_CUSTOM_GUI_SWIG_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/swig CACHE INTERNAL "" FORCE)
 
 ########################################################################
 # Add subdirectories

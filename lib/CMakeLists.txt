@@ -19,11 +19,29 @@
 # Boston, MA 02110-1301, USA.
 
 ########################################################################
+# QT GUI file generation stuff (Q_OBJECT)
+########################################################################
+set(custom_gui_includedir ${CMAKE_CURRENT_SOURCE_DIR}/../include/custom_gui)
+set(QTGUI_MOC_HEADERS
+  ${custom_gui_includedir}/surface_plot_form.h
+  ${custom_gui_includedir}/surface_marker.h
+
+)
+QT5_WRAP_CPP(QTGUI_MOC_OUTFILES ${QTGUI_MOC_HEADERS})
+
+########################################################################
 # Setup library
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
 
+include_directories(${Boost_INCLUDE_DIR} ${QT_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS} ${GNURADIO_ALL_LIBRARIES})
+
 list(APPEND custom_gui_sources
+    ${QTGUI_MOC_OUTFILES}
+    surface_plot_impl.cc
+    surface_plot_form.cc
+    surface_marker.cc
 )
 
 set(custom_gui_sources "${custom_gui_sources}" PARENT_SCOPE)
@@ -33,7 +51,27 @@ if(NOT custom_gui_sources)
 endif(NOT custom_gui_sources)
 
 add_library(gnuradio-custom_gui SHARED ${custom_gui_sources})
-target_link_libraries(gnuradio-custom_gui gnuradio::gnuradio-runtime)
+
+include(GrPython)
+
+target_link_libraries(gnuradio-custom_gui PUBLIC
+                      gnuradio::gnuradio-runtime 
+                      gnuradio-fft gnuradio-filter                     
+                      qwt::qwt 
+                      Qt5::Widgets 
+                      Qt5::Core Qt5::Gui 
+                      ${Boost_LIBRARIES} 
+                      ${QWT_LIBRARIES} 
+                      ${PYTHON_LIBRARIES} 
+                      ${QWTPLOT3D_LIBRARIES} 
+                      ${OPENGL_LIBRARIES} 
+                      ${GNURADIO_ALL_LIBRARIES})
+
+if(ENABLE_PYTHON)
+    target_compile_definitions(gnuradio-custom_gui PUBLIC -DENABLE_PYTHON)
+    target_link_libraries(gnuradio-custom_gui PUBLIC ${PYTHON_LIBRARIES})
+endif(ENABLE_PYTHON)
+
 target_include_directories(gnuradio-custom_gui
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     PUBLIC $<INSTALL_INTERFACE:include>
